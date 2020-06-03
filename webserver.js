@@ -2,14 +2,10 @@ var http = require('http').createServer(handler); //require http server, and cre
 var fs = require('fs'); //require filesystem module
 var io = require('socket.io')(http) //require socket.io module and pass the http object (server)
 var Gpio = require('onoff').Gpio; //include onoff to interact with the GPIO
-const piGpio = require('pigpio').Gpio;
-var forward = new Gpio(23, 'out'); //use GPIO pin 4 as output
-var back = new Gpio(24, 'out'); //use GPIO pin 4 as output
-//var direction = new Gpio(4, 'out'); //use GPIO pin 4 as output
-//var pushButton = new Gpio(17, 'in', 'both'); //use GPIO pin 17 as input, and 'both' button presses, and releases should be handled
+const piGpio = require('pigpio').Gpio; //include pigpio to interact with servo
+var forward = new Gpio(23, 'out'); //use GPIO pin 23 as output (Motor -> forward)
+var back = new Gpio(24, 'out'); //use GPIO pin 24 as output (Motor -> backward)
 const direction = new piGpio(4, {mode: Gpio.OUTPUT});
-let pulseWidth = 1000;
-let increment = 500;
 http.listen(8080); //listen to port 8080
 
 function handler (req, res) { //create server
@@ -25,51 +21,42 @@ function handler (req, res) { //create server
 }
 
 io.sockets.on('connection', function (socket) {// WebSocket Connection
-  let forwardValue = 1; //static variable for current status
-  let backValue = 1; //static variable for current status
-  /*pushButton.watch(function (err, value) { //Watch for hardware interrupts on pushButton
-    if (err) { //if an error
-      console.error('There was an error', err); //output error message to console
-      return;
-    }
-    lightvalue = value;
-    socket.emit('light', lightvalue); //send button status to client
-  });*/
-  socket.on('left', function(data) { //get light switch status from client
+  let forwardValue = 1; // variable for forwardValue
+  let backValue = 1; // variable for backValue
+  socket.on('left', function(data) { //change direction
     if(data){
-      direction.servoWrite(2000);
+      direction.servoWrite(2000);//one direction
     }else{
-      direction.servoWrite(1500);
+      direction.servoWrite(1500);//back to center position
     }
 
   });
-  socket.on('right', function(data) { //get light switch status from client
+  socket.on('right', function(data) { //change direction
     if(data){
-      direction.servoWrite(1000);
+      direction.servoWrite(1000);//the other direction
     }else{
-      direction.servoWrite(1500);
+      direction.servoWrite(1500);//back to center position
     }
   });
-  socket.on('forward', function(data) { //get light switch status from client
+  socket.on('forward', function(data) { //get status from client
     forwardValue = data;
-    if (forwardValue != forward.readSync()) { //only change LED if status has changed
-      forward.writeSync(forwardValue); //turn LED on or off
+    if (forwardValue != forward.readSync()) { //on status has changed
+      forward.writeSync(forwardValue); //turn Motor forward
     }
   });
-  socket.on('back', function(data) { //get light switch status from client
+  socket.on('back', function(data) { //get status from client
     backValue = data;
-    if (backValue != back.readSync()) { //only change LED if status has changed
-      back.writeSync(backValue); //turn LED on or off
+    if (backValue != back.readSync()) { //on status has changed
+      back.writeSync(backValue); //turn Motor backward
     }
   });
 });
 
 
 process.on('SIGINT', function () { //on ctrl+c
-  forward.writeSync(0); // Turn LED off
-  back.writeSync(0); // Turn LED off
-  forward.unexport(); // Unexport LED GPIO to free resources
-  back.unexport(); // Unexport LED GPIO to free resources
-  //pushButton.unexport(); // Unexport Button GPIO to free resources
+  forward.writeSync(0); // Turn Motor off
+  back.writeSync(0); // Turn Motor off
+  forward.unexport(); // Unexport Motor GPIO to free resources
+  back.unexport(); // Unexport Motor GPIO to free resources
   process.exit(); //exit completely
 });
