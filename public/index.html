@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h1>Control LED light</h1>
+<p>Left: <input type="checkbox" id="left"></p>
+<p>Right: <input type="checkbox" id="right"></p>
+<p>Forward: <input type="checkbox" id="forward"></p>
+<p>Back: <input type="checkbox" id="back"></p>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script> <!-- include socket.io client side script -->
+<script>
+let socket = io(); //load socket.io-client and connect to the host that serves the page
+window.addEventListener("load", function(){ //when page loads
+  let left = document.getElementById("left");
+  let right = document.getElementById("right");
+  let forward = document.getElementById("forward");
+  let back = document.getElementById("back");
+  left.addEventListener("change", function() { //add event listener for when checkbox changes
+    socket.emit("left", Number(this.checked)); //send button status to server (as 1 or 0)
+  });
+  right.addEventListener("change", function() { //add event listener for when checkbox changes
+    socket.emit("right", Number(this.checked)); //send button status to server (as 1 or 0)
+  });
+  forward.addEventListener("change", function() { //add event listener for when checkbox changes
+    socket.emit("forward", Number(this.checked)); //send button status to server (as 1 or 0)
+  });
+  back.addEventListener("change", function() { //add event listener for when checkbox changes
+    socket.emit("back", Number(this.checked)); //send button status to server (as 1 or 0)
+  });
+});
+socket.on('left', function (data) { //get button status from client
+  document.getElementById("left").checked = data; //change checkbox according to push button on Raspberry Pi
+  socket.emit("left", data); //send push button status to back to server
+});
+socket.on('right', function (data) { //get button status from client
+  document.getElementById("right").checked = data; //change checkbox according to push button on Raspberry Pi
+  socket.emit("right", data); //send push button status to back to server
+});
+socket.on('forward', function (data) { //get button status from client
+  document.getElementById("forward").checked = data; //change checkbox according to push button on Raspberry Pi
+  socket.emit("forward", data); //send push button status to back to server
+});
+socket.on('back', function (data) { //get button status from client
+  document.getElementById("back").checked = data; //change checkbox according to push button on Raspberry Pi
+  socket.emit("back", data); //send push button status to back to server
+});
+</script>
+</html>
+</body>
+</html>
