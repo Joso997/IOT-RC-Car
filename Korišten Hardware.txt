@@ -1,0 +1,7 @@
+Raspberry Pi 4
+Servo Motor TowerPro MG995
+Step-down Modul S LM2596S
+Modul s Relejom, 2-kanalni
+Električni motor
+2x baterija 6V, 4.5A
+baterija 12V, 12A
